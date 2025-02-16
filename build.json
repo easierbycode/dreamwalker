@@ -1,0 +1,19 @@
+{
+  "electron": {
+    "linux": {
+      "package": [
+        "appimage"
+      ],
+      "arch": [
+        "x64"
+      ],
+      "category": "Game"
+    },
+    "mac": {
+      "target": "dmg",
+      "arch": [
+        "arm64"
+      ]
+    }
+  }
+}
