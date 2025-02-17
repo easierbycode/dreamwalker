@@ -8,6 +8,68 @@ export const ENEMY_DEPTH = 10;
 export const HERO_DEPTH = 50;
 
 
+export class Bear extends Phaser.Physics.Arcade.Sprite {
+    constructor(scene, x, y, texture) {
+        super(scene, x, y, texture);
+        this.target = scene.hero;
+        scene.add.existing(this);
+        scene.physics.add.existing(this);
+        this.scene.physics.add.overlap(
+            this,
+            this.target,
+            () => {
+                if (this.hp <= 0) {
+                    return this.target.body.setVelocityY(-150);
+                }
+
+                const damageHero = (this.target.y > this.y - 8);
+
+                if (damageHero) {
+                    this.target.isHurt = true;
+                    this.target.body.setVelocityY(-150);
+                    this.target.body.setVelocityX(this.target.x > this.x ? 150 : -150);
+                    // this.scene.sound.play('sfx-hit');
+                    this.scene.cameras.main.shake(100, 0.01);
+                } else {
+                    this.hp -= 1;
+                    this.target.body.setVelocityY(-150);
+                    this.on('animationcomplete', () => {{this.play('bearDance')}});
+                    this.play({key: 'bearHurt', repeat: 3}, true);
+                    this.body.setVelocityX(0);
+                    this.body.setBounce(0);
+                    // this.scene.sound.play('sfx-squish');
+                    if (this.hp <= 0) {
+                        this.body.setVelocityY(-150);
+                        this.destroy();
+                    }
+                }
+            }
+        );
+        if (!this.scene.anims.exists('bearDance')) {
+            this.scene.anims.create({
+                key: 'bearDance',
+                frames: this.scene.anims.generateFrameNumbers('dancing-bear', { start: 0, end: 5 }),
+                frameRate: 15,
+                repeat: -1
+            });
+        }
+        if (!this.scene.anims.exists('bearHurt')) {
+            this.scene.anims.create({
+                key: 'bearHurt',
+                frames: this.scene.anims.generateFrameNumbers('dancing-bear', { start: 5, end: 0 }),
+                frameRate: 45
+            });
+        }
+        this.play('bearDance');
+        this.body.setDrag(1000, 0);
+        this.body.setMaxVelocity(150, 400);
+        this.body.setBounce(0, 0);
+        this.body.setCollideWorldBounds(true); // don't go out of the map
+        this.maxHp = 6;
+        this.hp = this.maxHp;
+    }
+}
+
 export default class GameScene extends Phaser.Scene {
     constructor() {
         super("game-scene");
@@ -24,18 +86,7 @@ export default class GameScene extends Phaser.Scene {
                 });
                 this.hero.body.setCollideWorldBounds(true); // don't go out of the map
 
-                this.anims.create({
-                    key: 'bearDance',
-                    frames: this.anims.generateFrameNumbers('dancing-bear', { start: 0, end: 5 }),
-                    frameRate: 15,
-                    repeat: -1
-                });
-                this.bear = this.add.sprite(80, 102, 'dancing-bear').play('bearDance');
-                this.physics.add.existing(this.bear);
-                this.bear.body.setDrag(1000, 0);
-                this.bear.body.setMaxVelocity(150, 400);
-                this.bear.body.setBounce(0, 0);
-                this.bear.body.setCollideWorldBounds(true); // don't go out of the map
+                this.bear = new Bear(this, 100, 100, 'dancing-bear');
 
                 const { map, dynamicLayers } = this.mapData;
 
