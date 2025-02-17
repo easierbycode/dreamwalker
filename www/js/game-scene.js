@@ -14,6 +14,9 @@ export class Bear extends Phaser.Physics.Arcade.Sprite {
         this.target = scene.hero;
         scene.add.existing(this);
         scene.physics.add.existing(this);
+
+        const groundBlock = scene.physics.add.collider(this, scene.mapData.dynamicLayers.ground);
+
         this.scene.physics.add.overlap(
             this,
             this.target,
@@ -40,7 +43,7 @@ export class Bear extends Phaser.Physics.Arcade.Sprite {
                     // this.scene.sound.play('sfx-squish');
                     if (this.hp <= 0) {
                         this.body.setVelocityY(-150);
-                        this.destroy();
+                        groundBlock.destroy();
                     }
                 }
             }
@@ -92,7 +95,7 @@ export default class GameScene extends Phaser.Scene {
 
                 const mapGroundColliders = getTilesetCustomColliders(this, dynamicLayers.ground.layer);
                 const mapElementsColliders = getTilesetCustomColliders(this, dynamicLayers.elements.layer);
-                this.physics.add.collider(dynamicLayers.ground, [this.hero, this.bear]);
+                this.physics.add.collider(dynamicLayers.ground, this.hero);
                 this.physics.add.collider(dynamicLayers.elements, [this.hero, this.bear]);
                 this.physics.add.collider(mapGroundColliders, [this.hero, this.bear]);
                 this.elementsCollider = this.physics.add.collider(mapElementsColliders, [this.hero, this.bear]);
